@@ -1,0 +1,703 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_labmanagement_app_name": {
+            "defaultValue": "labmanagement-app",
+            "type": "String"
+        },
+        "serverfarms_labmanagement_asp_name": {
+            "defaultValue": "labmanagement-asp",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('serverfarms_labmanagement_asp_name')]",
+            "location": "East US",
+            "sku": {
+                "name": "B1",
+                "tier": "Basic",
+                "size": "B1",
+                "family": "B",
+                "capacity": 1
+            },
+            "kind": "linux",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "freeOfferExpirationTime": "2022-12-02T16:15:30.51",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('sites_labmanagement_app_name')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_labmanagement_asp_name'))]"
+            ],
+            "kind": "app,linux",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_labmanagement_app_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_labmanagement_app_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_labmanagement_asp_name'))]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "JAVA|11-java11",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": true,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "C406179E6799AFA52FDFA83AC561B245CFA96378C4685C40BC47D3C2E12C4035",
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/ftp')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/scm')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/web')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "JAVA|11-java11",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": true,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 100,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$labmanagement-app",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "localMySqlEnabled": false,
+                "managedServiceIdentityId": 6338,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "preWarmedInstanceCount": 0,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 0,
+                "azureStorageAccounts": {}
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/52f71fc6-19d4-4e16-9add-84b323cad7cb')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "OneDeploy",
+                "message": "OneDeploy",
+                "start_time": "2022-11-02T17:07:46.0576938Z",
+                "end_time": "2022-11-02T17:07:52.6076954Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/659d6ae1-abac-4a7b-8435-df4511fd0a9a')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "VS Code",
+                "deployer": "Push-Deployer",
+                "message": "Created via a push deployment",
+                "start_time": "2022-11-02T16:17:44.5444346Z",
+                "end_time": "2022-11-02T16:18:01.6614972Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/8268bbdc-dbd9-45f8-9d89-f766335d7246')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "VS Code",
+                "deployer": "Push-Deployer",
+                "message": "Created via a push deployment",
+                "start_time": "2022-11-02T17:30:49.3242682Z",
+                "end_time": "2022-11-02T17:30:54.3371747Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/a4b8a108-29e5-4720-ad1b-4f5284b9f148')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "VS Code",
+                "deployer": "Push-Deployer",
+                "message": "Created via a push deployment",
+                "start_time": "2022-11-02T17:48:34.8392451Z",
+                "end_time": "2022-11-02T17:48:53.2695682Z",
+                "active": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/bc7c320f-6f10-4fc3-b82b-504647e01665')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "OneDeploy",
+                "message": "OneDeploy",
+                "start_time": "2022-11-02T16:43:28.3031449Z",
+                "end_time": "2022-11-02T16:43:32.3798659Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/d3cf51d6-e6f0-4813-8a6e-5b3eb80fce8c')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "VS Code",
+                "deployer": "Push-Deployer",
+                "message": "Created via a push deployment",
+                "start_time": "2022-11-02T16:30:15.1740064Z",
+                "end_time": "2022-11-02T16:30:37.2775816Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/e8cfa513-bd5d-4a33-831b-bf672548515d')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "VS Code",
+                "deployer": "Push-Deployer",
+                "message": "Created via a push deployment",
+                "start_time": "2022-11-02T17:43:38.9772181Z",
+                "end_time": "2022-11-02T17:44:19.3456311Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/', parameters('sites_labmanagement_app_name'), '.azurewebsites.net')]",
+            "location": "East US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ],
+            "properties": {
+                "siteName": "labmanagement-app",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-02T16_25_40_8148028')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-02T17_25_40_8553471')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-02T18_25_40_9176471')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-02T19_25_40_9706116')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-02T20_25_41_0298257')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-02T21_25_41_1076499')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-02T22_25_41_1938866')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-02T23_25_41_2368537')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T00_25_41_2627819')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T01_25_41_3447202')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T02_25_41_3852331')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T03_25_41_4424317')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T04_25_41_4773054')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T05_25_41_5410510')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T06_25_41_6074091')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T07_25_41_6497852')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T08_25_41_7235609')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T09_25_41_7588079')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T10_25_41_8087772')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T11_25_41_8630695')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T12_25_41_9219193')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T13_25_41_9845116')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T14_25_42_0410468')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T15_25_42_1095880')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T16_25_42_2042832')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T17_25_42_2267307')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T18_25_42_3965482')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T19_25_42_3672375')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T20_25_42_4171588')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T21_25_42_4625021')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T22_25_42_5021361')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-03T23_25_42_5744563')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T00_25_42_6710892')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T01_25_42_7660410')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T02_25_42_8309420')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T03_25_42_7912887')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T04_25_42_8427348')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T05_25_42_9084790')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T06_25_43_0289230')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T07_25_43_0093187')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T08_25_43_0962753')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T09_25_43_1142589')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T10_25_43_1651301')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/sites/snapshots",
+            "apiVersion": "2015-08-01",
+            "name": "[concat(parameters('sites_labmanagement_app_name'), '/2022-11-04T11_25_43_2535828')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_labmanagement_app_name'))]"
+            ]
+        }
+    ]
+}

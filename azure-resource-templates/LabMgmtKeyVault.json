@@ -1,0 +1,111 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vaults_labmanagement_kv_name": {
+            "defaultValue": "labmanagement-kv",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "apiVersion": "2022-07-01",
+            "name": "[parameters('vaults_labmanagement_kv_name')]",
+            "location": "eastus",
+            "properties": {
+                "sku": {
+                    "family": "A",
+                    "name": "standard"
+                },
+                "tenantId": "085b792c-63d6-4626-a8e1-741de27d3682",
+                "accessPolicies": [
+                    {
+                        "tenantId": "085b792c-63d6-4626-a8e1-741de27d3682",
+                        "objectId": "3e2891a6-bcc4-4e51-a312-1c35213a4aa4",
+                        "permissions": {
+                            "keys": [
+                                "all"
+                            ],
+                            "secrets": [
+                                "all"
+                            ],
+                            "certificates": [
+                                "all"
+                            ],
+                            "storage": [
+                                "all"
+                            ]
+                        }
+                    },
+                    {
+                        "tenantId": "085b792c-63d6-4626-a8e1-741de27d3682",
+                        "objectId": "b51e201b-eced-44a9-803a-70411aed3ea3",
+                        "permissions": {
+                            "secrets": [
+                                "list",
+                                "get"
+                            ]
+                        }
+                    },
+                    {
+                        "tenantId": "085b792c-63d6-4626-a8e1-741de27d3682",
+                        "objectId": "51ef9aa3-3d0b-47ce-bc0c-d96888928174",
+                        "permissions": {
+                            "secrets": [
+                                "list",
+                                "get"
+                            ]
+                        }
+                    },
+                    {
+                        "tenantId": "085b792c-63d6-4626-a8e1-741de27d3682",
+                        "objectId": "863b8a05-1679-4ff8-b144-5bd247fdcd67",
+                        "permissions": {
+                            "secrets": [
+                                "get",
+                                "list"
+                            ]
+                        }
+                    },
+                    {
+                        "tenantId": "085b792c-63d6-4626-a8e1-741de27d3682",
+                        "objectId": "c759aad9-640a-4dee-864c-e3dd9c3f7b4b",
+                        "permissions": {
+                            "secrets": [
+                                "list",
+                                "get"
+                            ]
+                        }
+                    }
+                ],
+                "enabledForDeployment": true,
+                "enabledForDiskEncryption": true,
+                "enabledForTemplateDeployment": true,
+                "enableSoftDelete": true,
+                "softDeleteRetentionInDays": 90,
+                "vaultUri": "[concat('https://', parameters('vaults_labmanagement_kv_name'), '.vault.azure.net/')]",
+                "provisioningState": "Succeeded",
+                "publicNetworkAccess": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2022-07-01",
+            "name": "[concat(parameters('vaults_labmanagement_kv_name'), '/connectionString')]",
+            "location": "eastus",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('vaults_labmanagement_kv_name'))]"
+            ],
+            "tags": {
+                "file-encoding": "utf-8"
+            },
+            "properties": {
+                "attributes": {
+                    "enabled": true
+                }
+            }
+        }
+    ]
+}
